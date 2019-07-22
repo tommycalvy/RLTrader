@@ -1,6 +1,7 @@
 package main
 
 import (
+  "github.com/alpacahq/alpaca-trade-api-go/polygon"
   "github.com/alpacahq/alpaca-trade-api-go/alpaca"
   "github.com/alpacahq/alpaca-trade-api-go/common"
   "github.com/joho/godotenv"
@@ -22,14 +23,16 @@ func init() {
     log.Print("No .env file found")
   }
 
-  common.EnvApiKeyID, exists := os.LookupEnv("APCA_API_KEY_ID")
+  alpacaEnvApiKeyID, exists := os.LookupEnv("APCA_API_KEY_ID")
   if exists {
 	   log.Printf("Api Key ID: %s", common.Credentials().ID)
   }
-  common.EnvApiSecretKey, exists := os.LookupEnv("APCA_API_SECRET_KEY")
+  os.Setenv(common.EnvApiKeyID, alpacaEnvApiKeyID)
+  alpacaEnvApiSecretKey, exists := os.LookupEnv("APCA_API_SECRET_KEY")
   if exists {
 	   log.Printf("API Secret Key: %s", common.Credentials().Secret)
   }
+  os.Setenv(common.EnvApiSecretKey, alpacaEnvApiSecretKey)
   alpacaBaseUrl, exists := os.LookupEnv("APCA_API_BASE_URL")
   if exists {
 	   log.Printf("Alpaca Base Url: %s", alpacaBaseUrl)
@@ -47,6 +50,12 @@ func main() {
   }
   log.Print(*acct)
 
+  polygonClient := polygon.NewClient(common.Credentials())
+  trades, err := polygonClient.GetHistoricTrades("AAPL", "2019-07-02")
+  if err != nil {
+    log.Print(err)
+  }
+  log.Print(trades)
   http.HandleFunc("/", indexHandler)
 
   // Serve static files out of the public directory.
